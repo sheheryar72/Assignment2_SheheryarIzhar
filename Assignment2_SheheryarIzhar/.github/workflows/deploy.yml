@@ -1,0 +1,41 @@
+name: Deploy to IIS Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Log in to Docker registry
+        run: docker login -u 4210144756503 -p Sheheryar@7222
+
+      - name: Build and Publish Docker Image1
+        run: |
+          docker build -t assignment2_image .
+          docker tag assignment2_image:latest 4210144756503/assignment2_docker:tag1
+          docker push 4210144756503/assignment2_docker:tag1
+
+      - name: Install SSH Client
+        run: sudo apt-get install openssh-client -y
+
+      - name: Deploy to IIS Server
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: 192.168.20.166
+          port: 2289
+          username: ITECKNOLOGI\kamran.jamal
+          password: Kamran@786
+
+          script: |
+            cd /path/to/deployment/folder
+            docker pull 4210144756503/assignment2_docker:tag1
+            docker stop assignment2_container || true
+            docker rm assignment2_container || true
+            docker run -d -p 8089 --name assignment2_container 4210144756503/assignment2_docker:tag1
